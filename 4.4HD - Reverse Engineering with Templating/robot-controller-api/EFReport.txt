@@ -1,0 +1,165 @@
+EFReport.txt
+
+Instructions:
+- Run the API in Debug mode with RobotContext logging enabled (OnConfiguring uses LogTo(Console.Write) and EnableSensitiveDataLogging()).
+- Exercise every EF method (GetAll, GetById, Insert, Update, Delete, plus any helpers like NameExists and IsCoordinateOnMap) via the API (Postman/curl).
+- Copy the Debug/Console output for each method and paste the SQL and parameter lines under the corresponding method heading below.
+- Keep entries grouped by method and include the HTTP request you used to trigger it.
+
+RobotCommandEF methods
+
+GetAll RobotCommands:
+---------------------
+HTTP request:
+GET http://localhost:5190/api/robot-commands
+
+Executed DbCommand (XXms) [Parameters=[], CommandType='Text', CommandTimeout='30' ]
+SELECT r.createddate, r.description, r.id, r.ismovecommand, r.modifieddate, r.name
+FROM robotcommand AS r
+
+GetMoveCommands:
+----------------
+HTTP request:
+GET http://localhost:5190/api/robot-commands/move
+
+Executed DbCommand (XXms) [Parameters=[], CommandType='Text', CommandTimeout='30' ]
+SELECT r.createddate, r.description, r.id, r.ismovecommand, r.modifieddate, r.name
+FROM robotcommand AS r
+WHERE r.ismovecommand = TRUE
+ORDER BY r.id
+
+GetById RobotCommand:
+---------------------
+HTTP request:
+GET http://localhost:5190/api/robot-commands/{id}
+
+Executed DbCommand (XXms) [Parameters=[@p0='1'], CommandType='Text', CommandTimeout='30' ]
+SELECT r.createddate, r.description, r.id, r.ismovecommand, r.modifieddate, r.name
+FROM robotcommand AS r
+WHERE r.id = @p0
+
+AddRobotCommand (Insert):
+-------------------------
+HTTP request:
+POST http://localhost:5190/api/robot-commands
+Body: {"name":"DANCE","isMoveCommand":true,"description":"test"}
+
+Executed DbCommand (XXms) [Parameters=[@p0='2024-08-22T00:21:19.8135580+10:00', @p1=NULL, @p2='True', @p3='2024-08-22T00:21:19.8135590+10:00', @p4='DANCE' (Nullable = false) ], CommandType='Text', CommandTimeout='30' ]
+INSERT INTO robotcommand (createddate, description, ismovecommand, modifieddate, name)
+VALUES (@p0, @p1, @p2, @p3, @p4)
+RETURNING id;
+
+UpdateRobotCommand:
+-------------------
+HTTP request:
+PUT http://localhost:5190/api/robot-commands/{id}
+Body: {"name":"DANCE","isMoveCommand":true,"description":"updated"}
+
+Executed DbCommand (XXms) [Parameters=[@p0='DANCE', @p1='updated', @p2='True', @p3='2024-08-22T00:30:00.0000000+10:00', @p4='1'], CommandType='Text', CommandTimeout='30' ]
+UPDATE public.robotcommand
+SET "Name" = @p0, description = @p1, ismovecommand = @p2, modifieddate = @p3
+WHERE id = @p4
+
+DeleteRobotCommand:
+-------------------
+HTTP request:
+DELETE http://localhost:5190/api/robot-commands/{id}
+
+Executed DbCommand (XXms) [Parameters=[@p0='7'], CommandType='Text', CommandTimeout='30' ]
+DELETE FROM public.robotcommand
+WHERE id = @p0
+
+NameExists (helper):
+--------------------
+HTTP request (example check used by POST/PUT logic):
+GET (internal check) - invoked by controller before Insert/Update
+
+Executed DbCommand (XXms) [Parameters=[@p0='DANCE'], CommandType='Text', CommandTimeout='30' ]
+SELECT r.id, r.name
+FROM robotcommand AS r
+WHERE r.name = @p0
+
+Executed DbCommand (XXms) [Parameters=[@p0='DANCE', @p1='1'], CommandType='Text', CommandTimeout='30' ]
+SELECT r.id, r.name
+FROM robotcommand AS r
+WHERE r.name = @p0 AND r.id <> @p1
+
+MapEF methods
+
+GetAll Maps:
+------------
+HTTP request:
+GET http://localhost:5190/api/maps
+
+Executed DbCommand (XXms) [Parameters=[], CommandType='Text', CommandTimeout='30' ]
+SELECT m.id, m.name, m.description, m.rows, m.columns, m.issquare, m.createddate, m.modifieddate
+FROM map AS m
+ORDER BY m.id
+
+GetSquareMaps:
+--------------
+HTTP request:
+GET http://localhost:5190/api/maps/square
+
+Executed DbCommand (XXms) [Parameters=[], CommandType='Text', CommandTimeout='30' ]
+SELECT m.id, m.name, m.description, m.rows, m.columns, m.issquare, m.createddate, m.modifieddate
+FROM map AS m
+WHERE m.issquare = TRUE
+ORDER BY m.id
+
+GetById Map:
+------------
+HTTP request:
+GET http://localhost:5190/api/maps/{id}
+
+Executed DbCommand (XXms) [Parameters=[@p0='3'], CommandType='Text', CommandTimeout='30' ]
+SELECT m.id, m.name, m.description, m.rows, m.columns, m.issquare, m.createddate, m.modifieddate
+FROM map AS m
+WHERE m.id = @p0
+
+AddMap (Insert):
+----------------
+HTTP request:
+POST http://localhost:5190/api/maps
+Body: {"name":"TestMap","rows":5,"columns":5,"description":"t"}
+
+Executed DbCommand (XXms) [Parameters=[@p0='TestMap', @p1='t', @p2='5', @p3='5', @p4='2024-08-22T00:40:00.0000000+10:00', @p5='2024-08-22T00:40:00.0000000+10:00' ], CommandType='Text', CommandTimeout='30' ]
+INSERT INTO public.map (name, description, rows, columns, createddate, modifieddate)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5)
+RETURNING id, name, description, rows, columns, issquare, createddate, modifieddate;
+
+UpdateMap:
+----------
+HTTP request:
+PUT http://localhost:5190/api/maps/{id}
+Body: {"name":"TestMap","rows":6,"columns":6,"description":"u"}
+
+Executed DbCommand (XXms) [Parameters=[@p0='TestMap', @p1='u', @p2='6', @p3='6', @p4='2024-08-22T00:45:00.0000000+10:00', @p5='1'], CommandType='Text', CommandTimeout='30' ]
+UPDATE public.map
+SET name = @p0, description = @p1, rows = @p2, columns = @p3, modifieddate = @p4
+WHERE id = @p5
+
+If MapEF sets the shadow property "issquare" on update:
+Executed DbCommand (XXms) [Parameters=[@p0='True', @p1='1'], CommandType='Text', CommandTimeout='30' ]
+UPDATE public.map
+SET issquare = @p0
+WHERE id = @p1
+
+DeleteMap:
+----------
+HTTP request:
+DELETE http://localhost:5190/api/maps/{id}
+
+Executed DbCommand (XXms) [Parameters=[@p0='5'], CommandType='Text', CommandTimeout='30' ]
+DELETE FROM public.map
+WHERE id = @p0
+
+IsCoordinateOnMap (helper):
+---------------------------
+HTTP request:
+GET http://localhost:5190/api/maps/{id}/{x}-{y}
+
+Executed DbCommand (XXms) [Parameters=[@p0='1'], CommandType='Text', CommandTimeout='30' ]
+SELECT m.rows, m.columns
+FROM map AS m
+WHERE m.id = @p0

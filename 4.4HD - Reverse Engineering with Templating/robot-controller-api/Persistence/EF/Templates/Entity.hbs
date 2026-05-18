@@ -1,0 +1,17 @@
+using System;
+using System.Collections.Generic;
+
+namespace {{Namespace}}
+{
+    // Simple POCO representing a database entity
+    public class {{EntityName}}
+    {
+{{#each Properties}}
+        // Property mapped from column {{Name}}
+        public {{Type}} {{toPascal Name}} { get; set; }
+{{/each}}
+
+        // Parameterless constructor required by EF and serializers
+        public {{EntityName}}() { }
+    }
+}

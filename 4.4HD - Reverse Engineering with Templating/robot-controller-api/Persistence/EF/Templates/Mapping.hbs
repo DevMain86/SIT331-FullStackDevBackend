@@ -1,0 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace {{Namespace}}.Mappings
+{
+    // Mapping configuration for the {{EntityName}} entity
+    public class {{EntityName}}Map : IEntityTypeConfiguration<{{Namespace}}.{{EntityName}}>
+    {
+        // Configure table and column mappings for EF Core
+        public void Configure(EntityTypeBuilder<{{Namespace}}.{{EntityName}}> builder)
+        {
+            // Map to snake_case table name
+            builder.ToTable("{{TableName}}");
+
+            // Primary key mapping (first property marked as key)
+{{#each Properties}}
+{{#if IsKey}}
+            builder.HasKey(e => e.{{toPascal Name}});
+{{/if}}
+{{/each}}
+
+            // Property mappings: preserve snake_case column names
+{{#each Properties}}
+            builder.Property(e => e.{{toPascal Name}})
+                   .HasColumnName("{{Name}}")
+{{#if IsIdentity}}
+                   .ValueGeneratedOnAdd()
+{{/if}}
+                   ;
+{{/each}}
+        }
+    }
+}

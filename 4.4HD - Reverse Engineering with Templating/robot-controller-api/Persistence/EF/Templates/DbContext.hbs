@@ -1,0 +1,27 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace {{Namespace}}
+{
+    // DbContext for the generated EF model
+    public class {{ContextName}} : DbContext
+    {
+        // Constructor: pass options to base DbContext
+        public {{ContextName}}(DbContextOptions<{{ContextName}}> options) : base(options) { }
+
+{{#each Entities}}
+        // DbSet for the {{EntityName}} entity
+        public DbSet<{{Namespace}}.{{EntityName}}> {{EntityName}}s { get; set; }
+{{/each}}
+
+        // Configure entity mappings
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Apply generated mapping configurations for each entity
+{{#each Entities}}
+            modelBuilder.ApplyConfiguration(new {{Namespace}}.Mappings.{{EntityName}}Map());
+{{/each}}
+        }
+    }
+}
